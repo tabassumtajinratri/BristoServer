@@ -33,6 +33,7 @@ async function run() {
     const menuCollection = client.db("bristoDB").collection("menu");
     const reviewCollection = client.db("bristoDB").collection("reviews");
     const cartCollection = client.db("bristoDB").collection("carts");
+    const usersCollection = client.db("bristoDB").collection("users");
 
     app.get('/menu', async(req,res)=>{
         const result = await menuCollection.find().toArray()
@@ -68,6 +69,24 @@ async function run() {
       const id = req.params.id
       const query = {_id: new ObjectId(id)}
       const result = await cartCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    app.post('/users', async(req, res)=>{
+      const user = req.body
+
+      const query = {email: user.email}
+      const existingUser = await usersCollection.findOne(query)
+      if(existingUser){
+        return res.send({message: 'user already exist', insertedId: null})
+      }
+      const result = await usersCollection.insertOne(user)
+      res.send(result)
+
+    })
+
+    app.get('/users', async(req,res)=>{
+      const result =await usersCollection.find().toArray()
       res.send(result)
     })
 
