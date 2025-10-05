@@ -37,6 +37,7 @@ async function run() {
     const reviewCollection = client.db("bristoDB").collection("reviews");
     const cartCollection = client.db("bristoDB").collection("carts");
     const usersCollection = client.db("bristoDB").collection("users");
+      const paymentCollection = client.db("bristoDB").collection("payment");
 
     app.get('/menu', async(req,res)=>{
         const result = await menuCollection.find().toArray()
@@ -271,6 +272,22 @@ async function run() {
     res.status(500).send({ error: error.message });
   }
 });
+
+
+app.post('/payments', async(req, res)=>{
+  const payment = req.body;
+  const paymentResult = await paymentCollection.insertOne(payment)
+  console.log('payment info', payment)
+  const query = {_id: {
+    $in: payment.cartIds.map(id => new ObjectId(id))
+
+  }}
+
+  const deleteResult = await cartCollection.deleteMany(query)
+  res.send({paymentResult, deleteResult})
+
+
+})
 
 
 
