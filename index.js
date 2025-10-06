@@ -299,6 +299,37 @@ app.post('/payments', async(req, res)=>{
 
 })
 
+app.get('/admin-stats', verifyToken, verifyAdmin, async(req, res)=>{
+  const users = await usersCollection.estimatedDocumentCount()
+  const menuItems = await menuCollection.estimatedDocumentCount()
+  const order = await paymentCollection.estimatedDocumentCount()
+  const payment = await paymentCollection.find().toArray()
+  // const revenue = payment.reduce((total, payment)=> total+payment.price, 0)
+
+  const result = await paymentCollection.aggregate([
+    {
+      $group:{
+        _id:null,
+        totalRevenue: {
+          $sum: '$price'
+        }
+      }
+    }
+  ]).toArray()
+
+  const revenue = result.length >0? result[0].totalRevenue : 0;
+
+
+
+  res.send({
+    users,
+    menuItems,
+    order,
+    revenue
+  })
+
+})
+
 
 
 
